@@ -1,0 +1,137 @@
+﻿@using ShoppingKart.Models
+
+@model PricingModel
+<!DOCTYPE html>
+
+<html>
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<title>Index</title>
+	@Styles.Render("~/Content/css")
+</head>
+<body>
+
+	<form id="product-list-widget">
+		<div class="panel-body">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="row">
+						<label class="col-md-5">Enter the product and quantity</label>
+					</div>
+					<div class="row">
+						<label class="col-md-2 control-label">Name:</label>
+						<div class="col-md-2">
+							@Html.TextBoxFor(m => m.Product.ProductName, new { @class = "form-control" })
+						</div>
+						<div class="col-md-2 hide" id="notify"></div>
+					</div>
+					<br />
+					<div class="row">
+						<label class="col-md-2 control-label">Quantity:</label>
+						<div class="col-md-2">
+							@Html.TextBoxFor(m => m.Product.ProductQuantity, new { @class = "form-control" })
+						</div>
+					</div>
+					<div class="row">
+						<button type="button" class="btn btn-primary" id="add-new-product">Submit</button>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div id="product-list-view"></div>
+				</div>
+			</div>
+		</div>
+	</form>
+
+	@Scripts.Render("~/bundles/jquery")
+	@Scripts.Render("~/bundles/bootstrap")
+
+	<script>
+		var initProductSetup = function () {
+			prepareProductSetupTab();
+		}
+		$(function(){
+			initProductSetup();
+		});
+
+		var prepareProductSetupTab = function (data) {
+			if (typeof (data) !== 'undefined')
+			{
+				$('#product-list-view').html(data);
+			}
+			$('#product-list').footable({
+				empty: ""
+			});
+			
+
+			$("#Product_ProductName").focusout(function () {
+				if ($(this).val() == "A")
+				{
+					$("#notify").html("Buy 2 get 1 free");
+					$("#notify").removeClass("hide");
+				}
+				else if($(this).val() == "B")
+				{
+					$("#notify").html("Buy 3 for 999Kr");
+					$("#notify").removeClass("hide");
+				}
+				else if ($(this).val() == "C")
+				{
+					$("#notify").addClass("hide");
+				}
+				else
+				{
+					$("#notify").html("Only codes A, B and C are allowed");
+					$("#notify").removeClass("hide");
+				}
+
+			});
+
+			$('#add-new-product').click(function (e) {
+				e.preventDefault();
+				addproduct();
+			});
+			$('#total').click(function (e) {
+				e.preventDefault();
+				totalproduct();
+			});
+			$('#reset').click(function (e) {
+				e.preventDefault();
+				resetproducts();
+			});
+		}
+		var addproduct = function () {
+			var formData = $('#product-list-widget').serializeArray();
+			var url = '@Url.Action("AddProduct", "ShoppingKart")';
+			$.post(url,formData).done(function (data) {
+				prepareProductSetupTab(data);
+			}).fail(function (fdata) {
+				console.log('error');
+			});
+		}
+		var totalproduct = function () {
+			var formData = $('#product-list-widget').serializeArray();
+			var url = '@Url.Action("TotalProduct", "ShoppingKart")';
+			$.post(url, formData).done(function (data) {
+				prepareProductSetupTab(data);
+			}).fail(function (fdata) {
+				console.log('error');
+			});
+		}
+		var resetproducts = function () {
+			var formData = $('#product-list-widget').serializeArray();
+			var url = '@Url.Action("ResetProducts", "ShoppingKart")';
+			$.post(url, formData).done(function (data) {
+				$('#product-list-view').html("");
+				$('#Product_ProductName').val("");
+				$('#Product_ProductQuantity').val("0");
+				$('#notify').addClass("hide");
+				prepareProductSetupTab();
+			}).fail(function (fdata) {
+				console.log('error');
+			});
+		}
+	</script>
+</body>
+</html>
+
